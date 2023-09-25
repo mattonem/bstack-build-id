@@ -4,7 +4,7 @@
     "https": "^1.0.0"
   },
   "name": "bstack-build-id",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "bin": {
     "bstack-build-id": "index.js"
   },

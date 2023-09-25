@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { program, option } = require('commander');
 const https = require('https');
 
