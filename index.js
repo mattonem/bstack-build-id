@@ -1,4 +1,4 @@
-const { program } = require('commander');
+const { program, option } = require('commander');
 const https = require('https');
 
 
@@ -28,7 +28,7 @@ let request_call = new Promise((resolve, reject) => {
         
             response.on('end', () => {
                 let response_body = Buffer.concat(chunks_of_data);
-                resolve(JSON.parse(response_body).find(x => x.name = options.project))
+                resolve(JSON.parse(response_body).find(x => x.name == options.project))
             });
         });
 
@@ -38,6 +38,8 @@ let request_call = new Promise((resolve, reject) => {
 
 request_call.then((project) => {
 	var builds_path = "automate/builds.json?limit=100"
+    if(options.project && !project)
+        return Promise.reject('project not found')
     if(project)
         builds_path += '&projectId=' + project.id
     let builds_url = new URL(`https://${domain}/${builds_path}`);
@@ -47,7 +49,9 @@ request_call.then((project) => {
     https.get(builds_url, res => {
         res.on('data', function (chunk){ data += chunk }) 
         res.on('end', function () {
-            theBuild = JSON.parse(data).find((aBuild => aBuild.automation_build.name = options.name))
+            theBuild = JSON.parse(data).find((aBuild => aBuild.automation_build.name == options.name))
+            if(!theBuild)
+                return Promise.reject('buildname not found')
             theBuild = theBuild.automation_build;
             theBuild.url = "https://automate.browserstack.com/dashboard/v2/" + theBuild.hashed_id;
             var sessions_path = `/automate/builds/${theBuild.hashed_id}/sessions.json`
@@ -61,6 +65,7 @@ request_call.then((project) => {
                 var sessions = JSON.parse(session_data).map(aSession => aSession.automation_session)
                 theBuild.sessions = sessions;
                 console.log(theBuild);
+                return Promise.resolve(theBuild)
             })
         })
         
